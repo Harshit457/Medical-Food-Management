@@ -6,8 +6,8 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js"
 import patientRoutes from "./routes/patient.route.js"
 import bodyParser from 'body-parser';
-
-
+import foodRoutes from "./routes/food.route.js"
+import pantryRoutes from "./routes/pantry.route.js"
 dotenv.config()
 // Initialize the Express app
 const app = express();
@@ -27,6 +27,8 @@ app.use(
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", patientRoutes);
+app.use("/api/auth",foodRoutes);
+app.use("/api/auth",pantryRoutes);
 app.use(bodyParser.json());
 
 

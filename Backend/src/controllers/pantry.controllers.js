@@ -1,38 +1,41 @@
 import { generateToken } from "../lib/utils.js";
 import Pantry from "../models/Pantry.model.js";
 import bcrypt from "bcryptjs";
+import Food from "../models/Food.model.js";
+import Admin from "../models/AdminModel.js";
+import Patient from "../models/Patient.model.js";
 
 export const createPantry = async (req, res) => {
+   
     const key = req.user._id;
-  const {staffName, contactInfo, email,password, status } = req.body;
+  const {staffName, contactInfo, emailpantry,passwordpantry, status } = req.body;
   try {
-    if (!email || !password || !staffName || !contactInfo || !status) {
+    if (!emailpantry || !passwordpantry || !staffName || !contactInfo || !status) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (password.length < 6) {
+    if (passwordpantry.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    const pantry = await Admin.findOne({ email });
+    const pantry = await Pantry.findOne({ emailpantry });
 
     if (pantry) return res.status(400).json({ message: "Email already exists" });
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(passwordpantry, salt);
     const newPantry = new Pantry({
-        staffName, contactInfo, email,password, status , key
+        staffName, contactInfo, emailpantry,passwordpantry:hashedPassword, status , key
      
     });
 
     if (newPantry) {
-      // generate jwt token here
-      generateToken(newPantry._id, res);
+      
       await newPantry.save();
 
       res.status(201).json({
         _id: newPantry._id,
         
-        email: newPantry.email,
+        emailpantry: newPantry.emailpantry,
         
       });
     } else {
@@ -45,15 +48,15 @@ export const createPantry = async (req, res) => {
 };
 
 export const loginPantry = async (req, res) => {
-  const { email, password } = req.body;
+  const { emailpantry, passwordpantry } = req.body;
   try {
-    const pantry = await Pantry.findOne({ email });
+    const pantry = await Pantry.findOne({ emailpantry });
 
     if (!pantry) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, admin.password);
+    const isPasswordCorrect = await bcrypt.compare(passwordpantry, pantry.passwordpantry);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -63,7 +66,7 @@ export const loginPantry = async (req, res) => {
     res.status(200).json({
       _id: pantry._id,
      
-      email: pantry.email,
+      emailpantry: pantry.emailpantry,
      
     });
   } catch (error) {
@@ -89,3 +92,17 @@ export const checkAuth = (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+export const getPantryDetails = async (req, res) => {
+  try {
+    // Fetch all patients and their associated food charts
+    const foodCharts = await Food.find().populate("patientId", "-__v -key -createdAt -updatedAt");
+
+    res.status(200).json(foodCharts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching pantry details." });
+  }
+};
+

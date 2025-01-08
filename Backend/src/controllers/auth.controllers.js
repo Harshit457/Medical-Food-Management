@@ -1,7 +1,8 @@
 import { generateToken } from "../lib/utils.js";
 import Admin from "../models/AdminModel.js";
 import bcrypt from "bcryptjs";
-
+import Food from "../models/Food.model.js";
+import Patient from "../models/Patient.model.js";
 export const signup = async (req, res) => {
   const {email, password} = req.body;
   try {
@@ -90,5 +91,28 @@ export const checkAuth = (req, res) => {
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getAdminDetails = async (req, res) => {
+  const { adminId } = req.user; // Assume adminId is extracted from the authenticated user's token
+
+  try {
+    // Fetch patients created by this admin
+    const patients = await Patient.find({ key: adminId }).select("-__v -key -createdAt -updatedAt");
+
+    // Fetch food charts for these patients
+    const foodCharts = await Food.find({ patientId: { $in: patients.map((p) => p._id) } }).populate(
+      "patientId",
+      "-__v -key -createdAt -updatedAt"
+    );
+
+    res.status(200).json({
+      patients,
+      foodCharts,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching admin details." });
   }
 };
