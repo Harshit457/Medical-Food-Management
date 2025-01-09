@@ -74,7 +74,8 @@ export const createFoodChart = async (req, res) => {
       const foodChart = await Food.find({ patientId });
   
       if (!foodChart || foodChart.length === 0) {
-        return res.status(404).json({ message: "No food chart found for this patient" });
+        // Return empty array with a 200 status instead of 404
+        return res.status(200).json([]); 
       }
   
       res.status(200).json(foodChart);
@@ -83,5 +84,49 @@ export const createFoodChart = async (req, res) => {
       res.status(500).json({ message: "Internal Server Error" });
     }
   };
+
+
+
+  export const updateFood = async (req, res) => {
+    try {
+     
+      const { morningMealStatus, eveningMealStatus, nightMealStatus , id} = req.body; // Meal statuses from the request body
+      console.log(id)
+      // Validate statuses (only allow valid status values for each meal)
+      const validStatuses = ["Pending", "Completed"];
+  
+      if (
+        (morningMealStatus && !validStatuses.includes(morningMealStatus)) ||
+        (eveningMealStatus && !validStatuses.includes(eveningMealStatus)) ||
+        (nightMealStatus && !validStatuses.includes(nightMealStatus))
+      ) {
+        return res.status(400).json({ message: "Invalid status value provided" });
+      }
+  
+      // Find the food chart by its unique ID
+      const foodChart = await Food.findById(id);
+  
+      if (!foodChart) {
+        return res.status(404).json({ message: "Food chart not found" });
+      }
+  
+      // Update the meal statuses only if they are provided in the request body
+      if (morningMealStatus) foodChart.morningMeal.status = morningMealStatus;
+      if (eveningMealStatus) foodChart.eveningMeal.status = eveningMealStatus;
+      if (nightMealStatus) foodChart.nightMeal.status = nightMealStatus;
+  
+      // Save the updated food chart
+      await foodChart.save();
+  
+      // Respond with the updated food chart
+      res.status(200).json(foodChart);
+    } catch (error) {
+      console.error("Error updating food chart", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+  
+  
+
       
   

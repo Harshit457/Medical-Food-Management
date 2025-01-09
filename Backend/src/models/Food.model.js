@@ -10,12 +10,12 @@ const FoodChartSchema = new mongoose.Schema({
     eveningMeal: {
       ingredients: [String],
       instructions: String,
-      status: { type: String, enum: ["Pending", "Approved"], default: "Pending" },
+      status: { type: String, enum: ["Pending", "Completed"], default: "Pending" },
     },
     nightMeal: {
       ingredients: [String],
       instructions: String,
-      status: { type: String, enum: ["Pending", "Approved"], default: "Pending" },
+      status: { type: String, enum: ["Pending", "Completed"], default: "Pending" },
     },
     staffName: { type: String, required: true },
     

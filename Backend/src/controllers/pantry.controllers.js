@@ -1,30 +1,30 @@
-import { generateToken } from "../lib/utils.js";
+import { generateTokend } from "../lib/utils.js";
 import Pantry from "../models/Pantry.model.js";
 import bcrypt from "bcryptjs";
 import Food from "../models/Food.model.js";
 import Admin from "../models/AdminModel.js";
-import Patient from "../models/Patient.model.js";
+
 
 export const createPantry = async (req, res) => {
    
     const key = req.user._id;
-  const {staffName, contactInfo, emailpantry,passwordpantry, status } = req.body;
+  const {staffName, contactInfo, email,password, status } = req.body;
   try {
-    if (!emailpantry || !passwordpantry || !staffName || !contactInfo || !status) {
+    if (!email || !password || !staffName || !contactInfo || !status) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (passwordpantry.length < 6) {
+    if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    const pantry = await Pantry.findOne({ emailpantry });
+    const pantry = await Pantry.findOne({ email });
 
     if (pantry) return res.status(400).json({ message: "Email already exists" });
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(passwordpantry, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
     const newPantry = new Pantry({
-        staffName, contactInfo, emailpantry,passwordpantry:hashedPassword, status , key
+        staffName, contactInfo, email,password:hashedPassword, status , key
      
     });
 
@@ -35,7 +35,7 @@ export const createPantry = async (req, res) => {
       res.status(201).json({
         _id: newPantry._id,
         
-        emailpantry: newPantry.emailpantry,
+        email: newPantry.email,
         
       });
     } else {
@@ -48,25 +48,25 @@ export const createPantry = async (req, res) => {
 };
 
 export const loginPantry = async (req, res) => {
-  const { emailpantry, passwordpantry } = req.body;
+  const { email, password } = req.body;
   try {
-    const pantry = await Pantry.findOne({ emailpantry });
+    const admin = await Pantry.findOne({ email });
 
-    if (!pantry) {
+    if (!admin) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(passwordpantry, pantry.passwordpantry);
+    const isPasswordCorrect = await bcrypt.compare(password, admin.password);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    generateToken(pantry._id, res);
+    generateTokend(admin._id, res);
 
     res.status(200).json({
-      _id: pantry._id,
-     
-      emailpantry: pantry.emailpantry,
+      _id: admin._id,
+      staffName: admin.staffName,
+      email: admin.email,
      
     });
   } catch (error) {
@@ -75,15 +75,6 @@ export const loginPantry = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
-  try {
-    res.cookie("jwt", "", { maxAge: 0 });
-    res.status(200).json({ message: "Logged out successfully" });
-  } catch (error) {
-    console.log("Error in logout controller", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
 export const checkAuth = (req, res) => {
   try {
     res.status(200).json(req.user);
@@ -103,6 +94,21 @@ export const getPantryDetails = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching pantry details." });
+  }
+};
+
+
+export const getDistinctStaffNames = async (req, res) => {
+  console.log("hello")
+  try {
+    // Use the distinct method to get unique staff names
+    const staffNames = await Pantry.distinct("staffName");
+
+    // Respond with the array of distinct staff names
+    res.status(200).json(staffNames);
+  } catch (error) {
+    console.error("Error fetching distinct staff names", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

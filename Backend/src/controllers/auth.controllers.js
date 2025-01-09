@@ -78,13 +78,37 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
-    res.status(200).json({ message: "Logged out successfully" });
+    const cookiesToClear = [];
+    
+    // Check if the "jwt" cookie exists
+    if (req.cookies.jwt) {
+      res.cookie("jwt", "", { maxAge: 0 }); // Clear the "jwt" cookie
+      cookiesToClear.push("jwt");
+    }
+    
+    // Check if the "jwtd" cookie exists
+    if (req.cookies.jwtd) {
+      res.cookie("jwtd", "", { maxAge: 0 }); // Clear the "jwtd" cookie
+      cookiesToClear.push("jwtd");
+    }
+    
+    // If no cookies were cleared, inform the user
+    if (cookiesToClear.length === 0) {
+      return res.status(400).json({ message: "No active sessions to log out" });
+    }
+
+    res.status(200).json({ 
+      message: "Logged out successfully", 
+      clearedCookies: cookiesToClear 
+    });
   } catch (error) {
-    console.log("Error in logout controller", error.message);
+    console.log("Error in logout controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
 export const checkAuth = (req, res) => {
   try {
     res.status(200).json(req.user);
@@ -93,6 +117,8 @@ export const checkAuth = (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
 
 export const getAdminDetails = async (req, res) => {
   const { adminId } = req.user; // Assume adminId is extracted from the authenticated user's token

@@ -4,28 +4,26 @@ import Admin from "../models/AdminModel.js";
 export const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
-
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized - No Token Provided" });
+      throw new Error("Unauthorized - No Token Provided");
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded) {
-      return res.status(401).json({ message: "Unauthorized - Invalid Token" });
+      throw new Error("Unauthorized - Invalid Token");
     }
 
     const user = await Admin.findById(decoded.userId).select("-password");
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      throw new Error("Unauthorized - User Not Found");
     }
 
     req.user = user;
-
-    next();
+    next(); // Proceed if everything is fine
   } catch (error) {
-    console.log("Error in protectRoute middleware: ", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    next(error); // Pass the error to the next middleware
   }
 };
+

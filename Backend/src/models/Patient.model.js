@@ -14,7 +14,6 @@ const PatientSchema = new mongoose.Schema(
     Allergies: {
       type: String,
       required: true,
-      minlength: 6,
     },
     RoomNumber: {
       type: Number,
