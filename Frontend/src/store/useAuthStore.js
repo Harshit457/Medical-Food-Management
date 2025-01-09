@@ -4,10 +4,11 @@ import toast from "react-hot-toast";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
+  
   isSigningUp: false,
   isLoggingIn: false,
   isCheckingAuth: true,
-
+  
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
@@ -20,6 +21,7 @@ export const useAuthStore = create((set, get) => ({
       set({ isCheckingAuth: false });
     }
   },
+  
 
   signup: async (data) => {
     set({ isSigningUp: true });
@@ -35,19 +37,29 @@ export const useAuthStore = create((set, get) => ({
   },
 
   
-  login: async (data, userType) => {
-    set({ isLoggingIn: true });
+  // In your store or wherever the login function is defined
+login: async (data, userType) => {
+  set({ isLoggingIn: true });
+  try {
     const endpoint = userType === "admin" ? "/auth/login" : "/auth/pantry/login";
-    try {
-      const res = await axiosInstance.post(endpoint, data);
-      set({ authUser: res.data });
-      toast.success("Logged in successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
-    } finally {
-      set({ isLoggingIn: false });
-    }
-  },
+    const res = await axiosInstance.post(endpoint, data);
+    console.log("Login Response:", res.data); // Log the response to check the data
+
+    // Assuming the backend response includes staffName for pantry users
+    set({ authUser: res.data });
+    toast.success("Logged in successfully");
+
+    // Return the response so we can use it in handleSignIn
+    return res.data;
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Login failed");
+    throw error; // Re-throw error to be caught in handleSignIn
+  } finally {
+    set({ isLoggingIn: false });
+  }
+},
+
+  
 
   logout: async () => {
     try {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
+import toast from "react-hot-toast";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -11,31 +12,46 @@ function SignIn() {
     password: "",
   });
 
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-    const { userType, email, password } = formData;
+  // In your component
+const handleSignIn = async (e) => {
+  e.preventDefault();
+  const { userType, email, password } = formData;
 
-    if (userType === "") {
-      toast.error("Please select a user type");
-      return;
-    }
+  if (userType === "") {
+    toast.error("Please select a user type");
+    return;
+  }
 
-    try {
-      await login({ email, password }, userType);
-      if (userType === "admin") navigate("/admin");
-      else if (userType === "pantry") alert("Pantry login successful!");
-    } catch (error) {
-      console.error("Error during login:", error);
+  try {
+    // Attempt login and get the authResponse (which includes staffName for pantry)
+    const authResponse = await login({ email, password }, userType);
+    console.log("Auth Response:", authResponse); // Log the response for debugging
+
+    if (userType === "admin") {
+      navigate("/admin");
+    } else if (userType === "pantry") {
+      // Ensure authResponse has staffName for pantry users
+      const { staffName } = authResponse;  // Destructure to get staffName
+      console.log("Staff Name:", staffName); // Log the staffName to confirm it's present
+      if (staffName) {
+        navigate(`/pantry/${staffName}`);
+      } else {
+        toast.error("Staff name not found.");
+      }
     }
-  };
+  } catch (error) {
+    console.error("Error during login:", error);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 z-0 opacity-5 bg-cover bg-center"
         style={{
-          backgroundImage: `url('https://img.freepik.com/free-photo/medical-banner-with-stethoscope_23-2149611199.jpg')`
+          backgroundImage: `url('https://img.freepik.com/free-photo/medical-banner-with-stethoscope_23-2149611199.jpg')`,
         }}
       />
 
