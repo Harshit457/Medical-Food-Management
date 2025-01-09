@@ -1,6 +1,6 @@
-# Hospital Management System
+# Hospital Food Management System
 
-This project is a web application designed to manage hospital operations efficiently. It includes features for managing staff, inventory, and more.
+This project is a web application designed to manage hospital food operations efficiently. It includes features for managing staff, inventory, and more.
 
 ---
 
