@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/react": "^2.1.1",
     "axios": "^1.7.9",
+    "hospital-food-management": "file:..",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.1",

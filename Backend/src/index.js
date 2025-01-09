@@ -8,6 +8,8 @@ import patientRoutes from "./routes/patient.route.js"
 import bodyParser from 'body-parser';
 import foodRoutes from "./routes/food.route.js"
 import pantryRoutes from "./routes/pantry.route.js"
+import path from "path";
+import exp from "constants";
 dotenv.config()
 // Initialize the Express app
 const app = express();
@@ -23,6 +25,7 @@ app.use(
     credentials: true,
   })
 );
+const __dirname = path.resolve();
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -31,6 +34,12 @@ app.use("/api/auth",foodRoutes);
 app.use("/api/auth",pantryRoutes);
 app.use(bodyParser.json());
 
+if(process.env.NODE_ENV==="production"){
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 // Start the server
 app.listen(PORT, () => {
