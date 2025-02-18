@@ -21,4 +21,7 @@ Password: Password@2025
 2. Pantry Account
 Email: hospital_pantry@xyz.com
 Password: Password@2025
+```
+## Check The Deployed Version
+https://medical-food-management-1.onrender.com/
 
